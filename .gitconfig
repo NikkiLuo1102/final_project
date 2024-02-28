@@ -1,0 +1,9 @@
+[pull]
+	rebase = true
+[core]
+	excludesfile = ~/.gitignore_global
+[safe]
+        directory = /opt/homebrew
+        directory = /opt/homebrew
+[credential]
+        helper = store
