@@ -26,6 +26,7 @@
         <flink-cdc.vesion>2.4.0</flink-cdc.vesion>
         <fastjson.version>1.2.83</fastjson.version>
         <hbase.version>2.4.11</hbase.version>
+        <zookeeper.version>3.5.7</zookeeper.version>
     </properties>
 
     <dependencies>
@@ -166,6 +167,12 @@
                 <groupId>org.apache.hbase</groupId>
                 <artifactId>hbase-client</artifactId>
                 <version>${hbase.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.zookeeper</groupId>
+                <artifactId>zookeeper</artifactId>
+                <version>3.5.7</version>
             </dependency>
 
             <dependency>

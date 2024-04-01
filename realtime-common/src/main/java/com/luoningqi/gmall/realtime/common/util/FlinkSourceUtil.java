@@ -33,7 +33,7 @@ public class FlinkSourceUtil {
         return KafkaSource.<String>builder()
                 .setBootstrapServers(Constant.KAFKA_BROKERS)
                 .setTopics(topic)
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setStartingOffsets(OffsetsInitializer.earliest())
                 .setGroupId(groupId)
                 .setValueOnlyDeserializer(new DeserializationSchema<String>() {
                     @Override

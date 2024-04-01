@@ -42,7 +42,7 @@
 
     <property>
         <name>hbase.zookeeper.quorum</name>
-        <value>hadoop102,hadoop103,hadoop104</value>
+        <value>hadoop102，hadoop103，hadoop104</value>
         <description>The directory shared by RegionServers.
         </description>
     </property>
