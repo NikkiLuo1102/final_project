@@ -3,9 +3,7 @@ package com.luoningqi.gmall.realtime.dim.function;
 import com.alibaba.fastjson.JSONObject;
 import com.luoningqi.gmall.realtime.common.bean.TableProcessDim;
 import com.luoningqi.gmall.realtime.common.util.JdbcUtil;
-import org.apache.flink.api.common.state.BroadcastState;
-import org.apache.flink.api.common.state.MapStateDescriptor;
-import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
+import org.apache.flink.api.common.state.*;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
@@ -17,6 +15,7 @@ import java.util.List;
 public class DimBroadcastFunction extends BroadcastProcessFunction<JSONObject, TableProcessDim, Tuple2<JSONObject, TableProcessDim>> {
     public HashMap<String, TableProcessDim> hashMap;
     MapStateDescriptor<String, TableProcessDim> broadcastState;
+    MapState<String, TableProcessDim> mapState;
 
     public DimBroadcastFunction(MapStateDescriptor<String, TableProcessDim> broadcastState) {
         this.broadcastState = broadcastState;
@@ -25,12 +24,15 @@ public class DimBroadcastFunction extends BroadcastProcessFunction<JSONObject, T
     @Override
 
     public void open(Configuration parameters) throws Exception {
+//        MapStateDescriptor<String, TableProcessDim> initialDimTable = new MapStateDescriptor<>("initial_dim_table", String.class, TableProcessDim.class);
+//        mapState = getRuntimeContext().getMapState(initialDimTable);
         java.sql.Connection mysqlConnection = JdbcUtil.getMysqlConnection();
         List<TableProcessDim> tableProcessDims = JdbcUtil.queryList(mysqlConnection, "select * from gmall2023_config.table_process_dim", TableProcessDim.class, true);
         hashMap = new HashMap<>();
         for (TableProcessDim tableProcessDim : tableProcessDims) {
             tableProcessDim.setOp("r");
             hashMap.put(tableProcessDim.getSourceTable(), tableProcessDim);
+//            mapState.put(tableProcessDim.getSourceTable(), tableProcessDim);
         }
         JdbcUtil.closeConnection(mysqlConnection);
     }

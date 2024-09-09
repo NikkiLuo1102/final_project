@@ -1,5 +1,6 @@
 package com.luoningqi.gmall.realtime.common.util;
 
+import com.luoningqi.gmall.realtime.common.constant.Constant;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.flink.shaded.guava30.com.google.common.base.CaseFormat;
 
@@ -7,15 +8,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.luoningqi.gmall.realtime.common.constant.Constant.*;
-
 public class JdbcUtil {
 
     public static Connection getMysqlConnection() throws ClassNotFoundException, SQLException {
         // 获取 jdbc 连接
         // 1. 加载驱动
-        Class.forName(MYSQL_DRIVER);
-        return DriverManager.getConnection(MYSQL_URL, MYSQL_USER_NAME, MYSQL_PASSWORD);
+        Class.forName(Constant.MYSQL_DRIVER);
+        return DriverManager.getConnection(Constant.MYSQL_URL, Constant.MYSQL_USER_NAME, Constant.MYSQL_PASSWORD);
     }
 
     /**

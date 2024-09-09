@@ -1,11 +1,16 @@
 package com.luoningqi.gmall.realtime.common.util;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 
 public class HBaseUtil {
     /**
@@ -41,8 +46,35 @@ public class HBaseUtil {
             }
         }
     }
-
-
+    /**
+     * 获取到 Hbase 的异步连接
+     *
+     * @return 得到异步连接对象
+     */
+    public static AsyncConnection getHBaseAsyncConnection() {
+        Configuration conf = new Configuration();
+        conf.set("hbase.zookeeper.quorum", "hadoop102");
+        conf.set("hbase.zookeeper.property.clientPort", "2181");
+        try {
+            return ConnectionFactory.createAsyncConnection(conf).get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    /**
+     * 关闭 hbase 异步连接
+     *
+     * @param asyncConn 异步连接
+     */
+    public static void closeAsyncHbaseConnection(AsyncConnection asyncConn) {
+        if (asyncConn != null) {
+            try {
+                asyncConn.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
     /**
      * 创建表格
      *
@@ -137,6 +169,50 @@ public class HBaseUtil {
 
     }
 
+    public static JSONObject getCells(Connection connection, String namespace, String tablename, String rowkey) throws IOException {
+        //1.获取table
+        Table table = connection.getTable(TableName.valueOf(namespace, tablename));
+        //2.创建 get 对象
+        Get get = new Get(Bytes.toBytes(rowkey));
+        JSONObject jsonObject = new JSONObject();
+        //3.调用 get 方法
+        try{
+            Result result = table.get(get);
+            for (Cell cell : result.rawCells()) {
+                jsonObject.put(new String(CellUtil.cloneQualifier(cell), StandardCharsets.UTF_8),new String(CellUtil.cloneValue(cell),StandardCharsets.UTF_8));
+            }
+        } catch (IOException exception){
+            exception.printStackTrace();
+        }
+
+        //4.关闭table
+        table.close();
+
+        return jsonObject;
+
+    }
+
+    public static JSONObject getAsyncCells(AsyncConnection hBaseAsyncConnection, String namespace, String tablename, String rowkey) throws IOException {
+        //1.获取table
+        AsyncTable<AdvancedScanResultConsumer> table = hBaseAsyncConnection.getTable(TableName.valueOf(namespace, tablename));
+        //2.创建 get 对象
+        Get get = new Get(Bytes.toBytes(rowkey));
+        JSONObject jsonObject = new JSONObject();
+        //3.调用 get 方法
+        try{
+            Result result = table.get(get).get();
+            Cell[] cells = result.rawCells();
+            for (Cell cell : cells) {
+                jsonObject.put(Bytes.toString(CellUtil.cloneQualifier(cell)), Bytes.toString(CellUtil.cloneValue(cell)));
+            }
+        } catch (Exception exception){
+            exception.printStackTrace();
+        }
+
+        return jsonObject;
+
+    }
+
     /**
      * 删除一整行数据
      *
@@ -159,6 +235,5 @@ public class HBaseUtil {
         }
         //4.关闭table
         table.close();
-
     }
 }

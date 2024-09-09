@@ -3,26 +3,31 @@ package com.luoningqi.gmall.realtime.dim.function;
 import com.alibaba.fastjson.JSONObject;
 import com.luoningqi.gmall.realtime.common.bean.TableProcessDim;
 import com.luoningqi.gmall.realtime.common.util.HBaseUtil;
+import com.luoningqi.gmall.realtime.common.constant.Constant;
+import com.luoningqi.gmall.realtime.common.util.RedisUtil;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 import org.apache.hadoop.hbase.client.Connection;
+import redis.clients.jedis.Jedis;
 
 import java.io.IOException;
 
-import static com.luoningqi.gmall.realtime.common.constant.Constant.HBASE_NAMESPACE;
-
 public class DimHbaseSinkFunction extends RichSinkFunction<Tuple2<JSONObject, TableProcessDim>> {
     Connection connection;
+    Jedis jedis;
+
 
     @Override
     public void open(Configuration parameters) throws Exception {
         connection = HBaseUtil.getConnection();
+        jedis = RedisUtil.getJedis();
     }
 
     @Override
     public void close() throws Exception {
         HBaseUtil.closeConnection(connection);
+        RedisUtil.closeJedis(jedis);
     }
 
     @Override
@@ -38,6 +43,10 @@ public class DimHbaseSinkFunction extends RichSinkFunction<Tuple2<JSONObject, Ta
             //覆盖写入维度表数据
             put(data, dim);
         }
+        //判断redis中的缓存是否发生变化
+        if ("delete".equals(type)||"update".equals(type)){
+            jedis.del(RedisUtil.getRedisKey(dim.getSinkTable(),data.getString(dim.getSinkRowKey())));
+        }
 
     }
 
@@ -46,7 +55,7 @@ public class DimHbaseSinkFunction extends RichSinkFunction<Tuple2<JSONObject, Ta
         String sinkRowKeyName = dim.getSinkRowKey();
         String sinkRowKeyValue = data.getString(sinkRowKeyName);
         try {
-            HBaseUtil.deleteCells(connection, HBASE_NAMESPACE, sinkTable, sinkRowKeyValue);
+            HBaseUtil.deleteCells(connection, Constant.HBASE_NAMESPACE, sinkTable, sinkRowKeyValue);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -60,7 +69,7 @@ public class DimHbaseSinkFunction extends RichSinkFunction<Tuple2<JSONObject, Ta
         String sinkRowKeyValue = data.getString(sinkRowKeyName);
         String sinkFamily = dim.getSinkFamily();
         try {
-            HBaseUtil.putCells(connection, HBASE_NAMESPACE, sinkTable, sinkRowKeyValue, sinkFamily, data);
+            HBaseUtil.putCells(connection, Constant.HBASE_NAMESPACE, sinkTable, sinkRowKeyValue, sinkFamily, data);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

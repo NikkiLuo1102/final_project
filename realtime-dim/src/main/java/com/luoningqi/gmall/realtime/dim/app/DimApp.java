@@ -28,8 +28,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.luoningqi.gmall.realtime.common.constant.Constant.HBASE_NAMESPACE;
-
 public class DimApp extends BaseApp {
     public static void main(String[] args) {
         new DimApp().start(10001, 4, "dim_app", Constant.TOPIC_DB);
@@ -76,8 +74,8 @@ public class DimApp extends BaseApp {
                 TableProcessDim dim = value.f1;
                 String sinkColumns = dim.getSinkColumns();
                 List<String> columns = Arrays.asList(sinkColumns.split(","));
-                JSONObject data1 = jsonObject.getJSONObject("data");
-                data1.keySet().removeIf(key -> !columns.contains(key));
+                JSONObject data = jsonObject.getJSONObject("data");
+                data.keySet().removeIf(key -> !columns.contains(key));
                 return value;
             }
         });
@@ -154,7 +152,7 @@ public class DimApp extends BaseApp {
                 String[] split = sinkFamily.split(",");
                 //可变参数可以填数组
                 try {
-                    HBaseUtil.createTable(connection, HBASE_NAMESPACE, dim.getSinkTable(), split);
+                    HBaseUtil.createTable(connection, Constant.HBASE_NAMESPACE, dim.getSinkTable(), split);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -162,7 +160,7 @@ public class DimApp extends BaseApp {
 
             private void deleteTable(TableProcessDim dim) {
                 try {
-                    HBaseUtil.dropTable(connection, HBASE_NAMESPACE, dim.getSinkTable());
+                    HBaseUtil.dropTable(connection, Constant.HBASE_NAMESPACE, dim.getSinkTable());
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
