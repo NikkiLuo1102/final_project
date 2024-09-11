@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.luoningqi</groupId>
-    <artifactId>gmall2024-realtime</artifactId>
+    <artifactId>gmall2024</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>realtime-common</module>
-        <module>realtime-dim</module>
-        <module>realtime-dwd</module>
-        <module>realtime-dws</module>
+        <module>common</module>
+        <module>dim</module>
+        <module>dwd</module>
+        <module>dws</module>
     </modules>
 
     <properties>
