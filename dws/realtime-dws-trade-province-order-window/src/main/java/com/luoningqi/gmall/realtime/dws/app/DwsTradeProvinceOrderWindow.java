@@ -34,10 +34,6 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author yhm
- * @create 2024-01-03 14:31
- */
 public class DwsTradeProvinceOrderWindow extends BaseApp {
     public static void main(String[] args) {
         new DwsTradeProvinceOrderWindow().start(10030,4,"dws_trade_province_order_window", Constant.TOPIC_DWD_TRADE_ORDER_DETAIL);
